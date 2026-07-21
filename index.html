@@ -17,35 +17,93 @@
     <aside class="controls">
       <p class="eyebrow">BLOODSTONE GRAPHICS ENGINE</p>
       <h1>Rank Generator</h1>
-      <p class="intro">Create cosmic, Geometry Dash-inspired rank banners.</p>
 
-      <label>
-        Rank name
+      <label>Rank name
         <input id="rankName" value="AMETHYST" maxlength="18" />
       </label>
 
-      <label>
-        Extra text
-        <input id="extraText" value="Tier XX-Peak" maxlength="40" />
+      <label>Extra text
+        <input id="extraText" value="TIER XX-PEAK" maxlength="40" />
       </label>
 
-      <label>
-        Crystal color
-        <input id="mainColor" type="color" value="#a55cff" />
+      <label>Rank preset
+        <select id="preset">
+          <option value="amethyst">Amethyst</option>
+          <option value="bloodstone">Bloodstone</option>
+          <option value="sapphire">Sapphire</option>
+          <option value="gold">Gold</option>
+          <option value="demon">Demon</option>
+        </select>
       </label>
 
-      <label>
-        Highlight color
-        <input id="glowColor" type="color" value="#f1ccff" />
+      <label>Banner shape
+        <select id="aspectRatio">
+          <option value="1600x600">Wide banner</option>
+          <option value="1400x700">Tall banner</option>
+          <option value="1000x1000">Square icon</option>
+        </select>
       </label>
 
-      <label>
-        Particle density
-        <input id="particleAmount" type="range" min="25" max="220" value="120" />
+      <label>Crystal type
+        <select id="crystalType">
+          <option value="diamond">Faceted diamonds</option>
+          <option value="shard">Energy shards</option>
+          <option value="orb">Gem orbs</option>
+        </select>
       </label>
 
-      <div class="button-row">
-        <button id="generateButton">Regenerate</button>
+      <label>Crystal location
+        <select id="crystalLayout">
+          <option value="sides">Large side crystals</option>
+          <option value="corners">Corner crystals</option>
+          <option value="ring">Crystal ring</option>
+        </select>
+      </label>
+
+      <label>Rank object
+        <select id="ornament">
+          <option value="crown">Crown emblem</option>
+          <option value="wings">Energy wings</option>
+          <option value="star">Celestial star</option>
+          <option value="none">No central object</option>
+        </select>
+      </label>
+
+      <label>Crystal count <span id="crystalCountValue"></span>
+        <input id="crystalCount" type="range" min="0" max="12" value="6" />
+      </label>
+
+      <label>Title size <span id="titleSizeValue"></span>
+        <input id="titleSize" type="range" min="60" max="180" value="124" />
+      </label>
+
+      <label>Title height <span id="titleYValue"></span>
+        <input id="titleY" type="range" min="180" max="460" value="315" />
+      </label>
+
+      <label>Subtitle height <span id="subtitleYValue"></span>
+        <input id="subtitleY" type="range" min="250" max="560" value="415" />
+      </label>
+
+      <label>Glow <span id="glowValue"></span>
+        <input id="glow" type="range" min="0" max="100" value="65" />
+      </label>
+
+      <label>Bloom <span id="bloomValue"></span>
+        <input id="bloom" type="range" min="0" max="100" value="55" />
+      </label>
+
+      <label>Cosmic haze <span id="hazeValue"></span>
+        <input id="haze" type="range" min="0" max="100" value="55" />
+      </label>
+
+      <label>Particle density <span id="particleValue"></span>
+        <input id="particleAmount" type="range" min="10" max="220" value="110" />
+      </label>
+
+      <div class="buttons">
+        <button id="generateButton">Randomize scene</button>
+        <button id="animateButton">Start animation</button>
         <button id="downloadButton" class="secondary">Download PNG</button>
       </div>
     </aside>
