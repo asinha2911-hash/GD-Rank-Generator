@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GD Rank Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="app">
+    <section class="panel">
+      <h1>GD Rank Generator</h1>
+      <p>Generate a glowing Geometry Dash-style rank banner.</p>
+
+      <label>
+        Rank name
+        <input id="rankName" value="AMETHYST" maxlength="18" />
+      </label>
+
+      <label>
+        Main color
+        <input id="mainColor" type="color" value="#bd75ff" />
+      </label>
+
+      <label>
+        Glow color
+        <input id="glowColor" type="color" value="#e9c4ff" />
+      </label>
+
+      <label>
+        Particle amount
+        <input id="particleAmount" type="range" min="10" max="180" value="90" />
+      </label>
+
+      <button id="generateButton">Generate rank</button>
+      <button id="downloadButton" class="secondary">Download PNG</button>
+    </section>
+
+    <section class="preview">
+      <canvas id="rankCanvas" width="960" height="360"></canvas>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
