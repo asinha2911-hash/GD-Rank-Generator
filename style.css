@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, Arial, sans-serif;
 }
 
 * {
@@ -8,48 +8,60 @@
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  color: #f8efff;
+  margin: 0;
+  color: #f8f3ff;
   background:
-    radial-gradient(circle at 50% 0%, #27113c 0%, transparent 45%),
-    #07030d;
+    radial-gradient(circle at 70% 0%, #301047 0%, transparent 35%),
+    radial-gradient(circle at 10% 100%, #1c0834 0%, transparent 40%),
+    #05020a;
 }
 
 .app {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1380px, calc(100% - 40px));
   min-height: 100vh;
   margin: auto;
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 28px;
+  grid-template-columns: 290px 1fr;
+  gap: 30px;
   align-items: center;
 }
 
-.panel {
-  padding: 24px;
-  border: 1px solid #6d3a95;
-  border-radius: 16px;
-  background: rgba(21, 10, 34, 0.86);
-  box-shadow: 0 0 35px rgba(190, 104, 255, 0.18);
+.controls {
+  padding: 25px;
+  border: 1px solid rgba(190, 127, 255, 0.35);
+  border-radius: 18px;
+  background: rgba(15, 7, 26, 0.82);
+  box-shadow: 0 0 45px rgba(151, 65, 255, 0.16);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #cc9cff;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
 }
 
 h1 {
-  margin-top: 0;
-  font-size: 1.5rem;
+  margin: 8px 0;
+  font-size: 1.7rem;
 }
 
-p {
-  color: #cbbbd8;
+.intro {
+  margin: 0 0 22px;
+  color: #c8b8d4;
   line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 label {
   display: grid;
   gap: 8px;
-  margin: 18px 0;
-  color: #eadbff;
-  font-size: 0.9rem;
+  margin: 17px 0;
+  color: #e9dcf5;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 input {
@@ -58,31 +70,42 @@ input {
 
 input[type="text"] {
   padding: 11px;
-  border: 1px solid #8052a3;
+  border: 1px solid #76518f;
   border-radius: 8px;
+  outline: none;
   color: white;
-  background: #120b1c;
+  background: #100818;
+  font: 700 0.95rem Inter, sans-serif;
+}
+
+input[type="text"]:focus {
+  border-color: #cc88ff;
+  box-shadow: 0 0 0 3px rgba(190, 104, 255, 0.18);
 }
 
 input[type="color"] {
   height: 38px;
   padding: 3px;
-  border: 1px solid #8052a3;
+  border: 1px solid #76518f;
   border-radius: 8px;
-  background: #120b1c;
+  background: #100818;
+}
+
+.button-row {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
 }
 
 button {
-  width: 100%;
-  margin-top: 10px;
   padding: 12px;
   cursor: pointer;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   color: white;
-  font-weight: bold;
-  background: linear-gradient(135deg, #a94cff, #6134d7);
-  box-shadow: 0 0 18px rgba(185, 99, 255, 0.35);
+  background: linear-gradient(135deg, #b65cff, #6530c8);
+  box-shadow: 0 0 22px rgba(177, 86, 255, 0.3);
+  font: 800 0.82rem Inter, sans-serif;
 }
 
 button:hover {
@@ -90,15 +113,15 @@ button:hover {
 }
 
 button.secondary {
-  background: #30203d;
+  background: #2b1c37;
   box-shadow: none;
 }
 
 .preview {
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #030106;
-  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
 }
 
 canvas {
@@ -107,9 +130,9 @@ canvas {
   height: auto;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 850px) {
   .app {
     grid-template-columns: 1fr;
-    padding: 24px 0;
+    padding: 28px 0;
   }
 }

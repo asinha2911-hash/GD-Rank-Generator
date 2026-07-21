@@ -4,14 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GD Rank Generator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <main class="app">
-    <section class="panel">
-      <h1>GD Rank Generator</h1>
-      <p>Generate a glowing Geometry Dash-style rank banner.</p>
+    <aside class="controls">
+      <p class="eyebrow">BLOODSTONE GRAPHICS ENGINE</p>
+      <h1>Rank Generator</h1>
+      <p class="intro">Create cosmic, Geometry Dash-inspired rank banners.</p>
 
       <label>
         Rank name
@@ -19,26 +25,28 @@
       </label>
 
       <label>
-        Main color
-        <input id="mainColor" type="color" value="#bd75ff" />
+        Crystal color
+        <input id="mainColor" type="color" value="#a55cff" />
       </label>
 
       <label>
-        Glow color
-        <input id="glowColor" type="color" value="#e9c4ff" />
+        Highlight color
+        <input id="glowColor" type="color" value="#f1ccff" />
       </label>
 
       <label>
-        Particle amount
-        <input id="particleAmount" type="range" min="10" max="180" value="90" />
+        Particle density
+        <input id="particleAmount" type="range" min="25" max="220" value="120" />
       </label>
 
-      <button id="generateButton">Generate rank</button>
-      <button id="downloadButton" class="secondary">Download PNG</button>
-    </section>
+      <div class="button-row">
+        <button id="generateButton">Regenerate</button>
+        <button id="downloadButton" class="secondary">Download PNG</button>
+      </div>
+    </aside>
 
     <section class="preview">
-      <canvas id="rankCanvas" width="960" height="360"></canvas>
+      <canvas id="rankCanvas" width="1600" height="600"></canvas>
     </section>
   </main>
 
