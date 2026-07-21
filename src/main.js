@@ -1,47 +1,54 @@
-import "./style.css";
+import Canvas from "./engine/Canvas.js";
+import Composer from "./engine/Composer.js";
+import Renderer from "./engine/Renderer.js";
+
+import StarField from "./components/StarField.js";
+import RankCrystal from "./components/RankCrystal.js";
+import RankFrame from "./components/RankFrame.js";
+import RankText from "./components/RankText.js";
+import Particles from "./components/Particles.js";
+import Decorations from "./components/Decorations.js";
 
 
-import Engine from "./Engine.js";
-import Camera from "./Camera.js";
-import SceneManager from "./SceneManager.js";
+const canvas=new Canvas();
+
+const composer=new Composer();
 
 
-console.log(
-    "Bloodstone Engine started!"
+composer.add(new StarField());
+
+composer.add(
+new RankCrystal({
+color:"#990000"
+})
+);
+
+
+composer.add(
+new RankFrame()
+);
+
+
+composer.add(
+new Decorations()
+);
+
+
+composer.add(
+new Particles()
+);
+
+
+composer.add(
+new RankText("BLOODSTONE")
 );
 
 
 
-const engine =
-    new Engine();
+const renderer=new Renderer(
+canvas,
+composer
+);
 
 
-const camera =
-    new Camera();
-
-
-const scene =
-    new SceneManager(
-        engine.scene
-    );
-
-
-
-function animate(){
-
-    requestAnimationFrame(
-        animate
-    );
-
-
-    scene.update();
-
-
-    engine.render(
-        camera.get()
-    );
-
-}
-
-
-animate();
+renderer.start();
