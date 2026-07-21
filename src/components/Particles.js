@@ -1,40 +1,47 @@
-import Layer from "../engine/Layer.js";
+export default class Particles{
 
 
-export default class Particles extends Layer{
+constructor(count=150){
 
 
-render(ctx){
+this.count=count;
 
 
-ctx.fillStyle="white";
+this.positions=[];
 
 
-for(let i=0;i<40;i++){
+for(
+let i=0;i<count;i++
+){
 
 
-ctx.beginPath();
+this.positions.push({
 
-ctx.arc(
-
-Math.random()*800,
-
-Math.random()*600,
-
-2,
-
-0,
-
-Math.PI*2
-
-);
+x:
+Math.random()*2-1,
 
 
-ctx.fill();
+y:
+Math.random()*2-1,
+
+
+size:
+Math.random()*3+1
+
+
+});
 
 
 }
 
+
+}
+
+
+
+getParticles(){
+
+return this.positions;
 
 }
 
