@@ -1,113 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bloodstone Rank Generator</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
-    }
-  }
-  </script>
-</head>
-
-<body>
-  <main class="app">
-    <aside class="controls">
-      <p class="eyebrow">BLOODSTONE GRAPHICS ENGINE</p>
-      <h1>Rank Generator</h1>
-
-      <label>Rank name
-        <input id="rankName" value="AMETHYST" maxlength="18">
-      </label>
-
-      <label>Extra text
-        <input id="extraText" value="TIER XX-PEAK" maxlength="40">
-      </label>
-
-      <label>Rank preset
-        <select id="preset">
-          <option value="amethyst">Amethyst</option>
-          <option value="bloodstone">Bloodstone</option>
-          <option value="sapphire">Sapphire</option>
-          <option value="gold">Gold</option>
-          <option value="demon">Demon</option>
-        </select>
-      </label>
-
-      <label>Crystal type
-        <select id="crystalType">
-          <option value="diamond">Faceted diamonds</option>
-          <option value="shard">Energy shards</option>
-          <option value="orb">Gem orbs</option>
-        </select>
-      </label>
-
-      <label>Crystal location
-        <select id="crystalLayout">
-          <option value="sides">Side clusters</option>
-          <option value="corners">Corner clusters</option>
-          <option value="ring">Crystal ring</option>
-        </select>
-      </label>
-
-      <label>Central ornament
-        <select id="ornament">
-          <option value="crown">Crown</option>
-          <option value="wings">Energy wings</option>
-          <option value="star">Celestial star</option>
-          <option value="none">None</option>
-        </select>
-      </label>
-
-      <label>Crystal count <output id="crystalCountOutput"></output>
-        <input id="crystalCount" type="range" min="0" max="12" value="6">
-      </label>
-
-      <label>Title size <output id="titleSizeOutput"></output>
-        <input id="titleSize" type="range" min="70" max="190" value="132">
-      </label>
-
-      <label>Glow <output id="glowOutput"></output>
-        <input id="glow" type="range" min="0" max="100" value="72">
-      </label>
-
-      <label>Bloom <output id="bloomOutput"></output>
-        <input id="bloom" type="range" min="0" max="100" value="62">
-      </label>
-
-      <label>Cosmic haze <output id="hazeOutput"></output>
-        <input id="haze" type="range" min="0" max="100" value="60">
-      </label>
-
-      <label>Particle density <output id="particleOutput"></output>
-        <input id="particles" type="range" min="20" max="260" value="150">
-      </label>
-
-      <label>Animation speed <output id="animationSpeedOutput"></output>
-        <input id="animationSpeed" type="range" min="0" max="100" value="35">
-      </label>
-
-      <button id="randomizeButton">Randomize composition</button>
-      <button id="animationButton">Pause animation</button>
-      <button id="downloadButton" class="secondary">Download PNG</button>
-    </aside>
-
-    <section class="preview">
-      <canvas id="spaceCanvas"></canvas>
-      <canvas id="rankCanvas" width="1800" height="480"></canvas>
-    </section>
-  </main>
-
-  <script type="module" src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gd-rank-generator</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>
