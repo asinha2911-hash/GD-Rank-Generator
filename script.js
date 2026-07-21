@@ -8,6 +8,7 @@ const particleAmount = document.getElementById("particleAmount");
 
 const generateButton = document.getElementById("generateButton");
 const downloadButton = document.getElementById("downloadButton");
+const extraText = document.getElementById("extraText");
 
 function random(min, max) {
   return Math.random() * (max - min) + min;
@@ -126,7 +127,7 @@ function drawCrystal(x, y, size, color, glow) {
   ctx.restore();
 }
 
-function drawText(title, color, glow) {
+function drawText(title, subtitle, color, glow) {
   let fontSize = 124;
 
   while (fontSize > 42) {
@@ -164,13 +165,14 @@ function drawText(title, color, glow) {
   ctx.font = "800 21px Inter";
   ctx.letterSpacing = "8px";
   ctx.fillStyle = rgba(glow, 0.95);
-  ctx.fillText("CELESTIAL RANK", 800, 408);
+  ctx.fillText(subtitle, 800, 408);
 
   ctx.restore();
 }
 
 function drawRank() {
   const title = rankName.value.trim().toUpperCase() || "AMETHYST";
+  ctx.fillText(subtitle, 800, 408);
   const color = mainColor.value;
   const glow = glowColor.value;
   const amount = Number(particleAmount.value);
@@ -230,7 +232,7 @@ function drawRank() {
   drawCrystal(290, 500, 22, color, glow);
   drawCrystal(1310, 105, 22, color, glow);
 
-  drawText(title, color, glow);
+  drawText(title, subtitle, color, glow);
 }
 
 generateButton.addEventListener("click", drawRank);
