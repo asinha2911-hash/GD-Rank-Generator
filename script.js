@@ -172,7 +172,7 @@ function drawText(title, subtitle, color, glow) {
 
 function drawRank() {
   const title = rankName.value.trim().toUpperCase() || "AMETHYST";
-  ctx.fillText(subtitle, 800, 408);
+  const subtitle = extraText.value.trim().toUpperCase() || "CELESTIAL RANK";
   const color = mainColor.value;
   const glow = glowColor.value;
   const amount = Number(particleAmount.value);
