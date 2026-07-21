@@ -20,7 +20,8 @@ const ui = {
   glow: document.getElementById("glow"),
   bloom: document.getElementById("bloom"),
   haze: document.getElementById("haze"),
-  particles: document.getElementById("particles")
+  particles: document.getElementById("particles"),
+  animationSpeed: document.getElementById("animationSpeed")
 };
 
 const outputPairs = [
@@ -29,7 +30,8 @@ const outputPairs = [
   ["glow", "glowOutput"],
   ["bloom", "bloomOutput"],
   ["haze", "hazeOutput"],
-  ["particles", "particleOutput"]
+  ["particles", "particleOutput"],
+  ["animationSpeed", "animationSpeedOutput"]
 ];
 
 const presets = {
@@ -371,10 +373,11 @@ function resizeWebGL() {
 }
 
 function render(time = 0) {
+  const motionTime = time * (Number(ui.animationSpeed.value) / 100);
   if (animationEnabled) {
     const preset = presets[ui.preset.value];
 
-    shaderMaterial.uniforms.time.value = time * 0.001;
+    shaderMaterial.uniforms.time.value = motionTime * 0.001;
     shaderMaterial.uniforms.colorA.value.set(preset.primary);
     shaderMaterial.uniforms.colorB.value.set(preset.dark);
     shaderMaterial.uniforms.haze.value = Number(ui.haze.value) / 100;
@@ -383,7 +386,7 @@ function render(time = 0) {
     bloomPass.radius = Number(ui.bloom.value) / 100;
 
     composer.render();
-    drawRank(time);
+    drawRank(motionTime);
   }
 
   requestAnimationFrame(render);
