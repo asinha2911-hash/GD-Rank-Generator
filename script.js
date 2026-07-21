@@ -1,41 +1,59 @@
-const canvas = document.getElementById("rankCanvas");
-const ctx = canvas.getContext("2d");
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
-const controls = {
+const rankCanvas = document.getElementById("rankCanvas");
+const ctx = rankCanvas.getContext("2d");
+const spaceCanvas = document.getElementById("spaceCanvas");
+
+const ui = {
   rankName: document.getElementById("rankName"),
   extraText: document.getElementById("extraText"),
   preset: document.getElementById("preset"),
-  aspectRatio: document.getElementById("aspectRatio"),
   crystalType: document.getElementById("crystalType"),
   crystalLayout: document.getElementById("crystalLayout"),
   ornament: document.getElementById("ornament"),
   crystalCount: document.getElementById("crystalCount"),
   titleSize: document.getElementById("titleSize"),
-  titleY: document.getElementById("titleY"),
-  subtitleY: document.getElementById("subtitleY"),
   glow: document.getElementById("glow"),
   bloom: document.getElementById("bloom"),
   haze: document.getElementById("haze"),
-  particleAmount: document.getElementById("particleAmount")
+  particles: document.getElementById("particles")
 };
+
+const outputPairs = [
+  ["crystalCount", "crystalCountOutput"],
+  ["titleSize", "titleSizeOutput"],
+  ["glow", "glowOutput"],
+  ["bloom", "bloomOutput"],
+  ["haze", "hazeOutput"],
+  ["particles", "particleOutput"]
+];
 
 const presets = {
-  amethyst: { color: "#a55cff", glow: "#f1ccff", dark: "#170727" },
-  bloodstone: { color: "#df2638", glow: "#ffb0a8", dark: "#260308" },
-  sapphire: { color: "#297dff", glow: "#b9e1ff", dark: "#031332" },
-  gold: { color: "#eead28", glow: "#fff0a6", dark: "#302000" },
-  demon: { color: "#ff4f16", glow: "#ffe0b8", dark: "#2b0703" }
+  amethyst: { primary: "#a95fff", glow: "#f1cdff", dark: "#150521" },
+  bloodstone: { primary: "#dd2739", glow: "#ffbbb4", dark: "#270307" },
+  sapphire: { primary: "#2b85ff", glow: "#c3e5ff", dark: "#03142f" },
+  gold: { primary: "#ecae28", glow: "#fff1aa", dark: "#2a1a00" },
+  demon: { primary: "#ff541b", glow: "#ffe2bc", dark: "#2b0803" }
 };
 
-let scene = [];
-let animationId = null;
-let animated = false;
+let animationEnabled = true;
+let stars = [];
+let scene;
+let camera;
+let renderer;
+let composer;
+let bloomPass;
+let shaderMaterial;
 
 function random(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-function hexToRgb(hex) {
+function rgb(hex) {
   const value = hex.replace("#", "");
   return {
     r: parseInt(value.slice(0, 2), 16),
@@ -45,74 +63,56 @@ function hexToRgb(hex) {
 }
 
 function rgba(hex, alpha) {
-  const { r, g, b } = hexToRgb(hex);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  const color = rgb(hex);
+  return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
 }
 
-function polygon(points, fill, stroke = null, lineWidth = 1) {
+function updateOutputs() {
+  outputPairs.forEach(([input, output]) => {
+    document.getElementById(output).textContent = ui[input].value;
+  });
+}
+
+function createStars() {
+  stars = Array.from({ length: 280 }, () => ({
+    x: random(0, 1800),
+    y: random(0, 480),
+    size: random(0.4, 3.2),
+    speed: random(0.08, 0.55),
+    phase: random(0, Math.PI * 2)
+  }));
+}
+
+function polygon(points, fill, stroke = null, width = 1) {
   ctx.beginPath();
   ctx.moveTo(points[0][0], points[0][1]);
-
-  for (const point of points.slice(1)) {
-    ctx.lineTo(point[0], point[1]);
-  }
-
+  points.slice(1).forEach((point) => ctx.lineTo(point[0], point[1]));
   ctx.closePath();
   ctx.fillStyle = fill;
   ctx.fill();
 
   if (stroke) {
     ctx.strokeStyle = stroke;
-    ctx.lineWidth = lineWidth;
+    ctx.lineWidth = width;
     ctx.stroke();
   }
 }
 
-function createScene() {
-  scene = Array.from({ length: 240 }, () => ({
-    x: random(0, canvas.width),
-    y: random(0, canvas.height),
-    size: random(0.5, 3.3),
-    speed: random(0.1, 0.7),
-    phase: random(0, Math.PI * 2)
-  }));
-}
-
-function drawSpark(x, y, size, color) {
+function drawCrystal(x, y, size, type, primary, glow, time) {
   ctx.save();
   ctx.translate(x, y);
-
-  ctx.beginPath();
-  for (let index = 0; index < 8; index++) {
-    const angle = (Math.PI * 2 * index) / 8;
-    const length = index % 2 === 0 ? size : size * 0.18;
-    ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
-  }
-
-  ctx.closePath();
-  ctx.shadowBlur = size * 2;
-  ctx.shadowColor = color;
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawCrystal(x, y, size, type, color, glow, time) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(Math.sin(time * 0.001 + x) * 0.12);
-
-  ctx.shadowBlur = size * 0.8;
-  ctx.shadowColor = rgba(color, 0.9);
+  ctx.rotate(Math.sin(time * 0.001 + x) * 0.1);
+  ctx.shadowBlur = size * 0.85;
+  ctx.shadowColor = rgba(primary, 0.9);
 
   if (type === "orb") {
-    const orb = ctx.createRadialGradient(-size * 0.25, -size * 0.3, 2, 0, 0, size);
-    orb.addColorStop(0, "#ffffff");
-    orb.addColorStop(0.18, glow);
-    orb.addColorStop(0.5, color);
-    orb.addColorStop(1, "#12001f");
+    const material = ctx.createRadialGradient(-size * 0.25, -size * 0.3, 2, 0, 0, size);
+    material.addColorStop(0, "#ffffff");
+    material.addColorStop(0.15, glow);
+    material.addColorStop(0.52, primary);
+    material.addColorStop(1, "#12001e");
 
-    ctx.fillStyle = orb;
+    ctx.fillStyle = material;
     ctx.beginPath();
     ctx.arc(0, 0, size, 0, Math.PI * 2);
     ctx.fill();
@@ -121,118 +121,156 @@ function drawCrystal(x, y, size, type, color, glow, time) {
   }
 
   if (type === "shard") {
-    polygon(
-      [[0, -size * 1.35], [size * 0.48, size], [0, size * 1.35], [-size * 0.48, size]],
-      color,
-      rgba(glow, 0.9),
-      2
-    );
-
-    polygon(
-      [[0, -size * 1.35], [0, size * 1.35], [-size * 0.48, size]],
-      glow
-    );
-
+    polygon([[0, -size * 1.4], [size * 0.5, size], [0, size * 1.35], [-size * 0.5, size]], primary, glow, 2);
+    polygon([[0, -size * 1.4], [0, size * 1.35], [-size * 0.5, size]], glow);
     ctx.restore();
     return;
   }
 
-  polygon(
-    [[0, -size], [size * 0.72, -size * 0.14], [size * 0.5, size * 0.8], [0, size * 1.15], [-size * 0.5, size * 0.8], [-size * 0.72, -size * 0.14]],
-    "#14051f",
-    rgba(glow, 0.85),
-    2
-  );
+  const outer = [
+    [0, -size], [size * 0.7, -size * 0.2], [size * 0.6, size * 0.5],
+    [size * 0.25, size], [0, size * 1.18], [-size * 0.25, size],
+    [-size * 0.6, size * 0.5], [-size * 0.7, -size * 0.2]
+  ];
 
-  polygon([[0, -size], [size * 0.72, -size * 0.14], [0, size * 0.05]], color);
-  polygon([[0, -size], [0, size * 0.05], [-size * 0.72, -size * 0.14]], glow);
-  polygon([[-size * 0.72, -size * 0.14], [0, size * 0.05], [-size * 0.5, size * 0.8]], "#46106f");
-  polygon([[0, size * 0.05], [size * 0.72, -size * 0.14], [size * 0.5, size * 0.8]], "#7d24bd");
-  polygon([[-size * 0.5, size * 0.8], [0, size * 0.05], [0, size * 1.15]], "#25063d");
-  polygon([[0, size * 0.05], [size * 0.5, size * 0.8], [0, size * 1.15]], "#3d0c65");
-
-  ctx.restore();
-}
-
-function drawOrnament(type, color, glow, time) {
-  if (type === "none") return;
-
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2 - 18);
-  ctx.globalAlpha = 0.43;
-  ctx.shadowBlur = 45;
-  ctx.shadowColor = color;
-  ctx.strokeStyle = glow;
-  ctx.fillStyle = rgba(color, 0.52);
-  ctx.lineWidth = 7;
-
-  if (type === "star") {
-    drawSpark(0, 0, 100 + Math.sin(time * 0.003) * 9, glow);
-  }
-
-  if (type === "crown") {
-    polygon([[-140, 80], [-118, -50], [-52, 12], [0, -105], [52, 12], [118, -50], [140, 80]], rgba(color, 0.45), glow, 7);
-    ctx.fillRect(-145, 80, 290, 32);
-  }
-
-  if (type === "wings") {
-    for (const direction of [-1, 1]) {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(direction * 130, -120, direction * 290, -55);
-      ctx.quadraticCurveTo(direction * 175, 28, 0, 35);
-      ctx.fill();
-      ctx.stroke();
-    }
-  }
+  polygon(outer, "#160522", rgba(glow, 0.9), 2);
+  polygon([[0, -size], [size * 0.7, -size * 0.2], [0, 0]], primary);
+  polygon([[0, -size], [0, 0], [-size * 0.7, -size * 0.2]], "#f5d6ff");
+  polygon([[-size * 0.7, -size * 0.2], [0, 0], [-size * 0.6, size * 0.5]], "#541382");
+  polygon([[0, 0], [size * 0.7, -size * 0.2], [size * 0.6, size * 0.5]], "#7f24bc");
+  polygon([[-size * 0.6, size * 0.5], [0, 0], [-size * 0.25, size]], "#30074e");
+  polygon([[0, 0], [size * 0.6, size * 0.5], [size * 0.25, size]], "#47106d");
+  polygon([[-size * 0.25, size], [0, 0], [0, size * 1.18]], "#200336");
+  polygon([[0, 0], [size * 0.25, size], [0, size * 1.18]], "#350658");
 
   ctx.restore();
 }
 
-function crystalPositions(layout, count) {
-  const w = canvas.width;
-  const h = canvas.height;
+function crystalLayout(layout, count) {
   const positions = [];
 
   if (layout === "sides") {
     for (let index = 0; index < count; index++) {
-      const left = index % 2 === 0;
       positions.push({
-        x: left ? random(90, 330) : random(w - 330, w - 90),
-        y: random(100, h - 85),
+        x: index % 2 ? random(1420, 1720) : random(80, 380),
+        y: random(85, 400),
         size: random(24, 82)
       });
     }
   }
 
   if (layout === "corners") {
-    const corners = [[130, 110], [w - 130, 110], [130, h - 110], [w - 130, h - 110]];
+    const corners = [[120, 100], [1680, 100], [120, 380], [1680, 380]];
     for (let index = 0; index < count; index++) {
-      const corner = corners[index % corners.length];
-      positions.push({ x: corner[0] + random(-55, 55), y: corner[1] + random(-55, 55), size: random(24, 70) });
+      const corner = corners[index % 4];
+      positions.push({ x: corner[0] + random(-55, 55), y: corner[1] + random(-45, 45), size: random(25, 72) });
     }
   }
 
   if (layout === "ring") {
     for (let index = 0; index < count; index++) {
-      const angle = (Math.PI * 2 * index) / count;
-      positions.push({
-        x: w / 2 + Math.cos(angle) * 470,
-        y: h / 2 + Math.sin(angle) * 190,
-        size: random(23, 62)
-      });
+      const angle = (Math.PI * 2 * index) / Math.max(count, 1);
+      positions.push({ x: 900 + Math.cos(angle) * 570, y: 240 + Math.sin(angle) * 170, size: random(23, 63) });
     }
   }
 
   return positions;
 }
 
-function drawText(title, subtitle, color, glow, values) {
-  let fontSize = values.titleSize;
+function drawOrnament(type, primary, glow, time) {
+  if (type === "none") return;
 
-  while (fontSize > 42) {
+  ctx.save();
+  ctx.translate(900, 220);
+  ctx.globalAlpha = 0.34;
+  ctx.shadowBlur = 55;
+  ctx.shadowColor = primary;
+  ctx.fillStyle = rgba(primary, 0.5);
+  ctx.strokeStyle = glow;
+  ctx.lineWidth = 7;
+
+  if (type === "crown") {
+    polygon([[-165, 85], [-130, -62], [-58, 12], [0, -118], [58, 12], [130, -62], [165, 85]], rgba(primary, 0.45), glow, 7);
+    ctx.fillRect(-170, 85, 340, 32);
+  }
+
+  if (type === "wings") {
+    for (const direction of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(direction * 150, -125, direction * 315, -52);
+      ctx.quadraticCurveTo(direction * 175, 35, 0, 34);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  if (type === "star") {
+    ctx.rotate(time * 0.00015);
+    ctx.beginPath();
+    for (let index = 0; index < 12; index++) {
+      const angle = (Math.PI * 2 * index) / 12;
+      const length = index % 2 ? 34 : 138;
+      ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawRank(time) {
+  const preset = presets[ui.preset.value];
+  const title = ui.rankName.value.trim().toUpperCase() || "AMETHYST";
+  const subtitle = ui.extraText.value.trim().toUpperCase() || "TIER XX-PEAK";
+  const glowStrength = Number(ui.glow.value) / 100;
+  const bloom = Number(ui.bloom.value);
+  const haze = Number(ui.haze.value) / 100;
+
+  ctx.clearRect(0, 0, 1800, 480);
+
+  for (let index = 0; index < 5; index++) {
+    const x = 180 + index * 360;
+    const y = 90 + (index % 2) * 290;
+    const cloud = ctx.createRadialGradient(x, y, 0, x, y, 300);
+    cloud.addColorStop(0, rgba(preset.primary, haze * 0.18));
+    cloud.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = cloud;
+    ctx.fillRect(0, 0, 1800, 480);
+  }
+
+  stars.slice(0, Number(ui.particles.value)).forEach((star) => {
+    const y = (star.y + time * star.speed * 0.02) % 480;
+    const alpha = 0.35 + Math.sin(time * 0.002 + star.phase) * 0.3;
+
+    ctx.shadowBlur = star.size * 3;
+    ctx.shadowColor = preset.glow;
+    ctx.fillStyle = rgba(preset.glow, alpha);
+    ctx.beginPath();
+    ctx.arc(star.x, y, star.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.save();
+  ctx.shadowBlur = bloom;
+  ctx.shadowColor = preset.primary;
+  ctx.strokeStyle = rgba(preset.glow, 0.78);
+  ctx.lineWidth = 3;
+  ctx.strokeRect(20, 20, 1760, 440);
+  ctx.restore();
+
+  drawOrnament(ui.ornament.value, preset.primary, preset.glow, time);
+
+  crystalLayout(ui.crystalLayout.value, Number(ui.crystalCount.value)).forEach((crystal) => {
+    drawCrystal(crystal.x, crystal.y, crystal.size, ui.crystalType.value, preset.primary, preset.glow, time);
+  });
+
+  let fontSize = Number(ui.titleSize.value);
+  while (fontSize > 50) {
     ctx.font = `900 ${fontSize}px "Cinzel Decorative"`;
-    if (ctx.measureText(title).width < canvas.width * 0.68) break;
+    if (ctx.measureText(title).width < 1080) break;
     fontSize -= 2;
   }
 
@@ -240,158 +278,155 @@ function drawText(title, subtitle, color, glow, values) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = `900 ${fontSize}px "Cinzel Decorative"`;
-
-  ctx.shadowBlur = values.bloom;
-  ctx.shadowColor = rgba(glow, values.glow / 100);
-  ctx.lineWidth = 15;
-  ctx.strokeStyle = rgba(color, 0.8);
-  ctx.strokeText(title, canvas.width / 2, values.titleY);
+  ctx.shadowBlur = bloom;
+  ctx.shadowColor = rgba(preset.glow, glowStrength);
+  ctx.lineWidth = 17;
+  ctx.strokeStyle = rgba(preset.primary, 0.9);
+  ctx.strokeText(title, 900, 265);
 
   ctx.shadowBlur = 0;
-  ctx.lineWidth = 7;
-  ctx.strokeStyle = "#1a0329";
-  ctx.strokeText(title, canvas.width / 2, values.titleY);
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#190326";
+  ctx.strokeText(title, 900, 265);
 
-  const metal = ctx.createLinearGradient(0, values.titleY - 90, 0, values.titleY + 90);
+  const metal = ctx.createLinearGradient(0, 170, 0, 350);
   metal.addColorStop(0, "#ffffff");
-  metal.addColorStop(0.2, glow);
-  metal.addColorStop(0.48, color);
-  metal.addColorStop(0.72, "#fff0ff");
-  metal.addColorStop(1, "#4b106f");
+  metal.addColorStop(0.18, preset.glow);
+  metal.addColorStop(0.5, preset.primary);
+  metal.addColorStop(0.76, "#ffeaff");
+  metal.addColorStop(1, "#50107b");
 
   ctx.fillStyle = metal;
-  ctx.fillText(title, canvas.width / 2, values.titleY);
+  ctx.fillText(title, 900, 265);
 
-  ctx.font = "800 21px Inter";
-  ctx.fillStyle = rgba(glow, 0.96);
-  ctx.fillText(subtitle, canvas.width / 2, values.subtitleY);
+  ctx.font = "800 20px Inter";
+  ctx.fillStyle = rgba(preset.glow, 0.95);
+  ctx.fillText(subtitle, 900, 360);
   ctx.restore();
 }
 
-function drawRank(time = 0) {
-  const preset = presets[controls.preset.value];
-  const values = {
-    titleSize: Number(controls.titleSize.value),
-    titleY: Number(controls.titleY.value),
-    subtitleY: Number(controls.subtitleY.value),
-    glow: Number(controls.glow.value),
-    bloom: Number(controls.bloom.value),
-    haze: Number(controls.haze.value),
-    particles: Number(controls.particleAmount.value)
-  };
+function setupWebGL() {
+  renderer = new THREE.WebGLRenderer({ canvas: spaceCanvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-  const [width, height] = controls.aspectRatio.value.split("x").map(Number);
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-    createScene();
-  }
+  scene = new THREE.Scene();
+  camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-  const title = controls.rankName.value.trim().toUpperCase() || "AMETHYST";
-  const subtitle = controls.extraText.value.trim().toUpperCase() || "CELESTIAL RANK";
+  shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      colorA: { value: new THREE.Color("#18052b") },
+      colorB: { value: new THREE.Color("#050109") },
+      haze: { value: 0.6 }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform float time;
+      uniform float haze;
+      uniform vec3 colorA;
+      uniform vec3 colorB;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+      float noise(vec2 p) {
+        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+      }
 
-  const background = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  background.addColorStop(0, "#020106");
-  background.addColorStop(0.5, preset.dark);
-  background.addColorStop(1, "#030106");
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const hazePulse = 0.75 + Math.sin(time * 0.0015) * 0.25;
-  for (let index = 0; index < 6; index++) {
-    const x = (index * 293 + 190) % canvas.width;
-    const y = (index * 137 + 80) % canvas.height;
-    const cloud = ctx.createRadialGradient(x, y, 0, x, y, 310);
-    cloud.addColorStop(0, rgba(preset.color, (values.haze / 380) * hazePulse));
-    cloud.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = cloud;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  scene.slice(0, values.particles).forEach((particle) => {
-    const y = (particle.y + time * particle.speed * 0.02) % canvas.height;
-    const alpha = 0.4 + Math.sin(time * 0.002 + particle.phase) * 0.35;
-    ctx.beginPath();
-    ctx.arc(particle.x, y, particle.size, 0, Math.PI * 2);
-    ctx.fillStyle = rgba(preset.glow, alpha);
-    ctx.fill();
+      void main() {
+        vec2 uv = vUv;
+        float wave = sin(uv.x * 7.0 + time * 0.25) * 0.08;
+        float cloud = noise(uv * 9.0 + wave + time * 0.02);
+        float nebula = smoothstep(0.36, 0.78, cloud) * haze;
+        vec3 color = mix(colorB, colorA, nebula);
+        color += vec3(0.15, 0.04, 0.25) * sin(uv.y * 8.0 + time * 0.3) * haze;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `
   });
 
-  ctx.save();
-  ctx.shadowBlur = values.bloom;
-  ctx.shadowColor = preset.color;
-  ctx.strokeStyle = rgba(preset.glow, 0.72);
-  ctx.lineWidth = 3;
-  ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48);
-  ctx.restore();
+  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), shaderMaterial));
 
-  drawOrnament(controls.ornament.value, preset.color, preset.glow, time);
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
 
-  crystalPositions(controls.crystalLayout.value, Number(controls.crystalCount.value)).forEach((crystal) => {
-    drawCrystal(crystal.x, crystal.y, crystal.size, controls.crystalType.value, preset.color, preset.glow, time);
-  });
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 1.35, 0.55, 0.12);
+  composer.addPass(bloomPass);
+  composer.addPass(new OutputPass());
 
-  drawText(title, subtitle, preset.color, preset.glow, values);
+  resizeWebGL();
 }
 
-function animate(time) {
-  drawRank(time);
+function resizeWebGL() {
+  const width = spaceCanvas.clientWidth;
+  const height = spaceCanvas.clientHeight;
 
-  if (animated) {
-    animationId = requestAnimationFrame(animate);
+  renderer.setSize(width, height, false);
+  composer.setSize(width, height);
+}
+
+function render(time = 0) {
+  if (animationEnabled) {
+    const preset = presets[ui.preset.value];
+
+    shaderMaterial.uniforms.time.value = time * 0.001;
+    shaderMaterial.uniforms.colorA.value.set(preset.primary);
+    shaderMaterial.uniforms.colorB.value.set(preset.dark);
+    shaderMaterial.uniforms.haze.value = Number(ui.haze.value) / 100;
+
+    bloomPass.strength = Number(ui.bloom.value) / 42;
+    bloomPass.radius = Number(ui.bloom.value) / 100;
+
+    composer.render();
+    drawRank(time);
   }
+
+  requestAnimationFrame(render);
 }
 
-function updateLabels() {
-  const mappings = [
-    ["crystalCount", "crystalCountValue"],
-    ["titleSize", "titleSizeValue"],
-    ["titleY", "titleYValue"],
-    ["subtitleY", "subtitleYValue"],
-    ["glow", "glowValue"],
-    ["bloom", "bloomValue"],
-    ["haze", "hazeValue"],
-    ["particleAmount", "particleValue"]
-  ];
-
-  mappings.forEach(([input, output]) => {
-    document.getElementById(output).textContent = controls[input].value;
-  });
-}
-
-Object.values(controls).forEach((control) => {
-  control.addEventListener("input", () => {
-    updateLabels();
-    if (!animated) drawRank();
+Object.values(ui).forEach((element) => {
+  element.addEventListener("input", () => {
+    updateOutputs();
+    drawRank(performance.now());
   });
 });
 
-document.getElementById("generateButton").addEventListener("click", () => {
-  createScene();
-  drawRank();
+document.getElementById("randomizeButton").addEventListener("click", () => {
+  createStars();
+  drawRank(performance.now());
 });
 
-document.getElementById("animateButton").addEventListener("click", (event) => {
-  animated = !animated;
-  event.target.textContent = animated ? "Stop animation" : "Start animation";
-
-  if (animated) {
-    animationId = requestAnimationFrame(animate);
-  } else {
-    cancelAnimationFrame(animationId);
-    drawRank();
-  }
+document.getElementById("animationButton").addEventListener("click", (event) => {
+  animationEnabled = !animationEnabled;
+  event.target.textContent = animationEnabled ? "Pause animation" : "Start animation";
 });
 
 document.getElementById("downloadButton").addEventListener("click", () => {
+  const output = document.createElement("canvas");
+  output.width = 1800;
+  output.height = 480;
+
+  const outputCtx = output.getContext("2d");
+  outputCtx.drawImage(spaceCanvas, 0, 0, 1800, 480);
+  outputCtx.drawImage(rankCanvas, 0, 0);
+
   const link = document.createElement("a");
-  link.download = `${controls.rankName.value.trim() || "rank"}-gd-rank.png`;
-  link.href = canvas.toDataURL("image/png");
+  link.download = `${ui.rankName.value.trim() || "rank"}-rank.png`;
+  link.href = output.toDataURL("image/png");
   link.click();
 });
 
-createScene();
-updateLabels();
-document.fonts.ready.then(() => drawRank());
+window.addEventListener("resize", resizeWebGL);
+
+createStars();
+updateOutputs();
+setupWebGL();
+document.fonts.ready.then(() => {
+  drawRank(0);
+  requestAnimationFrame(render);
+});

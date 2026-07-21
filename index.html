@@ -3,13 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GD Rank Generator</title>
+  <title>Bloodstone Rank Generator</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css" />
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 
 <body>
@@ -19,11 +27,11 @@
       <h1>Rank Generator</h1>
 
       <label>Rank name
-        <input id="rankName" value="AMETHYST" maxlength="18" />
+        <input id="rankName" value="AMETHYST" maxlength="18">
       </label>
 
       <label>Extra text
-        <input id="extraText" value="TIER XX-PEAK" maxlength="40" />
+        <input id="extraText" value="TIER XX-PEAK" maxlength="40">
       </label>
 
       <label>Rank preset
@@ -33,14 +41,6 @@
           <option value="sapphire">Sapphire</option>
           <option value="gold">Gold</option>
           <option value="demon">Demon</option>
-        </select>
-      </label>
-
-      <label>Banner shape
-        <select id="aspectRatio">
-          <option value="1600x600">Wide banner</option>
-          <option value="1400x700">Tall banner</option>
-          <option value="1000x1000">Square icon</option>
         </select>
       </label>
 
@@ -54,65 +54,56 @@
 
       <label>Crystal location
         <select id="crystalLayout">
-          <option value="sides">Large side crystals</option>
-          <option value="corners">Corner crystals</option>
+          <option value="sides">Side clusters</option>
+          <option value="corners">Corner clusters</option>
           <option value="ring">Crystal ring</option>
         </select>
       </label>
 
-      <label>Rank object
+      <label>Central ornament
         <select id="ornament">
-          <option value="crown">Crown emblem</option>
+          <option value="crown">Crown</option>
           <option value="wings">Energy wings</option>
           <option value="star">Celestial star</option>
-          <option value="none">No central object</option>
+          <option value="none">None</option>
         </select>
       </label>
 
-      <label>Crystal count <span id="crystalCountValue"></span>
-        <input id="crystalCount" type="range" min="0" max="12" value="6" />
+      <label>Crystal count <output id="crystalCountOutput"></output>
+        <input id="crystalCount" type="range" min="0" max="12" value="6">
       </label>
 
-      <label>Title size <span id="titleSizeValue"></span>
-        <input id="titleSize" type="range" min="60" max="180" value="124" />
+      <label>Title size <output id="titleSizeOutput"></output>
+        <input id="titleSize" type="range" min="70" max="190" value="132">
       </label>
 
-      <label>Title height <span id="titleYValue"></span>
-        <input id="titleY" type="range" min="180" max="460" value="315" />
+      <label>Glow <output id="glowOutput"></output>
+        <input id="glow" type="range" min="0" max="100" value="72">
       </label>
 
-      <label>Subtitle height <span id="subtitleYValue"></span>
-        <input id="subtitleY" type="range" min="250" max="560" value="415" />
+      <label>Bloom <output id="bloomOutput"></output>
+        <input id="bloom" type="range" min="0" max="100" value="62">
       </label>
 
-      <label>Glow <span id="glowValue"></span>
-        <input id="glow" type="range" min="0" max="100" value="65" />
+      <label>Cosmic haze <output id="hazeOutput"></output>
+        <input id="haze" type="range" min="0" max="100" value="60">
       </label>
 
-      <label>Bloom <span id="bloomValue"></span>
-        <input id="bloom" type="range" min="0" max="100" value="55" />
+      <label>Particle density <output id="particleOutput"></output>
+        <input id="particles" type="range" min="20" max="260" value="150">
       </label>
 
-      <label>Cosmic haze <span id="hazeValue"></span>
-        <input id="haze" type="range" min="0" max="100" value="55" />
-      </label>
-
-      <label>Particle density <span id="particleValue"></span>
-        <input id="particleAmount" type="range" min="10" max="220" value="110" />
-      </label>
-
-      <div class="buttons">
-        <button id="generateButton">Randomize scene</button>
-        <button id="animateButton">Start animation</button>
-        <button id="downloadButton" class="secondary">Download PNG</button>
-      </div>
+      <button id="randomizeButton">Randomize composition</button>
+      <button id="animationButton">Pause animation</button>
+      <button id="downloadButton" class="secondary">Download PNG</button>
     </aside>
 
     <section class="preview">
-      <canvas id="rankCanvas" width="1600" height="600"></canvas>
+      <canvas id="spaceCanvas"></canvas>
+      <canvas id="rankCanvas" width="1800" height="480"></canvas>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
